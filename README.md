@@ -42,7 +42,13 @@ Below, "history" means clipboard history, and "picker" means this program.
 
 ## Install
 
-Keep `bin/` and `lib/` together:
+Install the package to get a `clipboard` command on `PATH`:
+
+```sh
+uv tool install git+https://github.com/athaurian/clipboard-picker
+```
+
+Or keep `bin/` and `lib/` together and run the checkout directly:
 
 ```sh
 git clone https://github.com/athaurian/clipboard-picker
@@ -50,7 +56,8 @@ cd clipboard-picker
 ./bin/clipboard
 ```
 
-To call the picker by name, symlink it into `~/.local/bin`:
+To call a checkout by name without installing, symlink `bin/clipboard` into
+`~/.local/bin`:
 
 ```sh
 ln -s "$PWD/bin/clipboard" ~/.local/bin/clipboard
