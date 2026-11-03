@@ -6,7 +6,7 @@ export PYTHONPYCACHEPREFIX := $(HOME)/.cache/clipboard-picker/pycache
 # versions are pinned so the gate does not change under the tree.
 CHECK_PY := uv run --with ruff==0.17.3 --with mypy==2.4.1 python3
 
-PY_FILES := $(shell find lib -name '*.py') bin/clipboard
+PY_FILES := $(shell find src/picker_lib tests -name '*.py') bin/clipboard
 
 .DEFAULT_GOAL := help
 
@@ -25,11 +25,11 @@ check: lint
 lint:
 	$(CHECK_PY) -m ruff check --no-cache $(PY_FILES)
 	$(CHECK_PY) -m ruff format --check --no-cache $(PY_FILES)
-	$(CHECK_PY) -m mypy --cache-dir=/dev/null lib/picker_lib
+	$(CHECK_PY) -m mypy --cache-dir=/dev/null src/picker_lib
 
 format:
 	$(CHECK_PY) -m ruff check --fix --no-cache $(PY_FILES)
 	$(CHECK_PY) -m ruff format --no-cache $(PY_FILES)
 
 test:
-	PYTHONPATH=lib $(CHECK_PY) -m unittest discover -s lib/picker_lib/tests
+	PYTHONPATH=src:. $(CHECK_PY) -m unittest discover -s tests -t .

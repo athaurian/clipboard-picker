@@ -15,12 +15,11 @@ authors = [{ name = "Hanif Ilham Athaurrahman" }]
 clipboard = "picker_lib.cli:main"
 
 [tool.setuptools]
-package-dir = { "" = "lib" }
+package-dir = { "" = "src" }
 
 [tool.setuptools.packages.find]
-where = ["lib"]
+where = ["src"]
 include = ["picker_lib*"]
-exclude = ["picker_lib.tests*"]
 
 [tool.ruff]
 line-length = 88

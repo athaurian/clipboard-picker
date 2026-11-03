@@ -48,7 +48,7 @@ Install the package to get a `clipboard` command on `PATH`:
 uv tool install git+https://github.com/athaurian/clipboard-picker
 ```
 
-Or keep `bin/` and `lib/` together and run the checkout directly:
+Or keep `bin/` and `src/` together and run the checkout directly:
 
 ```sh
 git clone https://github.com/athaurian/clipboard-picker
@@ -147,7 +147,7 @@ no project virtual environment is needed.
 To run the unit tests without `make`:
 
 ```sh
-PYTHONPATH=lib python3 -m unittest discover -s lib/picker_lib/tests
+PYTHONPATH=src:. python3 -m unittest discover -s tests -t .
 ```
 
 ## License

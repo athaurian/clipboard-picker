@@ -7,8 +7,8 @@ from pathlib import Path
 # Write bytecode caches under ~/.cache instead of next to the checkout.
 sys.pycache_prefix = str(Path.home() / ".cache" / "clipboard-picker" / "pycache")
 
-# bin/clipboard sits next to lib/picker_lib in the checkout.
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
+# bin/clipboard sits next to src/picker_lib in the checkout.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from picker_lib.cli import main
 
