@@ -1,4 +1,9 @@
+<div align="center">
+<img src="monogram.svg" alt="clipboard-picker monogram" width="128">
+
 # clipboard-picker
+
+</div>
 
 Hi. This is a simple clipboard history picker for Wayland that uses the `kitty`
 terminal. Here's how it works:
