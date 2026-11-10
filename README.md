@@ -22,7 +22,7 @@ I use this in [my setup](https://github.com/athaurian/dotfiles).
 
 ## Terms
 
-Here are some terms that will be used throughout this page:
+These terms come up throughout this page:
 
 | Term         | Meaning                                                                                                                   |
 | ------------ | ------------------------------------------------------------------------------------------------------------------------- |
@@ -36,14 +36,14 @@ Below, "history" means clipboard history, and "picker" means this program.
 ## Requirements
 
 - Python 3.11 or newer.
-- A Wayland session with `WAYLAND_DISPLAY` set. There is no X11 backend.
+- A Wayland session with `WAYLAND_DISPLAY` set. There's no X11 backend.
 - `cliphist` for the history, `wl-clipboard` (`wl-copy`) for copying back, and
   `fzf` for the interface.
 - ImageMagick (`magick`) to recognize images, and `kitten` from kitty to draw
   them.
 - `kitty` to open the picker window when it starts without a terminal.
 - `notify-send` for error and empty-history messages. Notifications are
-  skipped silently when it is missing.
+  skipped silently when it's missing.
 
 ## Install
 
@@ -80,8 +80,8 @@ Start the picker from a terminal:
 | -------------------------------- | ------------------------------------ |
 | Type                             | Filter entries by their summary      |
 | `Up`, `Down`, `Ctrl-p`, `Ctrl-n` | Move the highlight                   |
-| `Return`                         | Copy the highlighted entry and close |
-| `Esc`, `Ctrl-C`                  | Close without copying                |
+| `Enter`                          | Copy the highlighted entry and close |
+| `Esc`, `Ctrl-c`                  | Close without copying                |
 
 If the selected entry has been removed from the history since the list was
 drawn, the picker says so in a notification and leaves the clipboard alone.
@@ -91,39 +91,39 @@ an empty history, and 1 when a dependency is missing or the backend fails.
 
 ### Preview fallbacks
 
-| Content                       | Shown as                   |
-| ----------------------------- | -------------------------- |
-| Text (UTF-8)                  | The full text              |
-| Text (UTF-16 without a BOM)   | The decoded text           |
-| Image                         | The image, inline          |
-| Image that cannot be rendered | `[image: N bytes]`         |
-| Anything else                 | `[N bytes of binary data]` |
+| Content                      | Shown as                   |
+| ---------------------------- | -------------------------- |
+| Text (UTF-8)                 | The full text              |
+| Text (UTF-16 without a BOM)  | The decoded text           |
+| Image                        | The image, inline          |
+| Image that can't be rendered | `[image: N bytes]`         |
+| Anything else                | `[N bytes of binary data]` |
 
 Browsers sometimes put copied content on the clipboard as UTF-16 without a
 byte-order mark, so the preview decodes that rather than showing a binary blob.
 
 ### Options
 
-| Option           | Effect                                                                                        |
-| ---------------- | --------------------------------------------------------------------------------------------- |
-| `--backend NAME` | Use a specific backend. `cliphist` is the only one.                                           |
-| `--db-path PATH` | Use a specific `cliphist` database instead of `cliphist`'s default.                           |
-| `--preview ID`   | Print the preview for an entry and exit. `fzf` calls this, so it is not normally run by hand. |
+| Option           | Effect                                                                                       |
+| ---------------- | -------------------------------------------------------------------------------------------- |
+| `--backend NAME` | Use a specific backend. `cliphist` is the only one.                                          |
+| `--db-path PATH` | Use a specific `cliphist` database instead of `cliphist`'s default.                          |
+| `--preview ID`   | Print the preview for an entry and exit. `fzf` calls this, so it isn't normally run by hand. |
 
 ### Environment
 
 | Variable             | Effect                                                                                                                                     |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `PICKER_NO_RELAUNCH` | Any non-empty value stops the relaunch into kitty when stdout is not a terminal.                                                           |
-| `CLIPBOARD_BACKEND`  | Backend to use when `--backend` is not given.                                                                                              |
+| `PICKER_NO_RELAUNCH` | Any non-empty value stops the relaunch into kitty when stdout isn't a terminal.                                                            |
+| `CLIPBOARD_BACKEND`  | Backend to use when `--backend` isn't given.                                                                                               |
 | `WAYLAND_DISPLAY`    | Session detection. When set, the `cliphist` backend is selected. When unset, the picker reports that the session has no supported backend. |
 
 `--backend` wins over `CLIPBOARD_BACKEND`, which wins over detection.
 
-## Running from a keybinding
+## Running from a binding
 
-`fzf` needs a terminal. Started from a window manager keybinding, the picker's
-stdout is not a terminal, so it re-executes itself inside a floating `kitty`
+`fzf` needs a terminal. Started from a window manager binding, the picker's
+stdout isn't a terminal, so it re-executes itself inside a floating `kitty`
 window titled `clipboard_term`. The title lets the compositor float and mark
 the window. On Sway, add these lines to the config:
 
@@ -132,7 +132,7 @@ for_window [app_id="kitty" title="clipboard_term"] floating enable, resize set w
 bindsym $mod+Ctrl+v exec ~/.local/bin/clipboard
 ```
 
-If kitty is not installed, the picker sends a notification instead of opening
+If kitty isn't installed, the picker sends a notification instead of opening
 a window.
 
 ## Development
@@ -147,7 +147,7 @@ The `Makefile` provides these targets:
 | `make test`   | Runs the unit tests.                                                                      |
 
 The targets use `uv` to pull pinned versions of `ruff` and `mypy` on demand, so
-no project virtual environment is needed.
+you don't need a project virtual environment.
 
 To run the unit tests without `make`:
 
