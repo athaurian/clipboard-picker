@@ -5,156 +5,76 @@
 
 </div>
 
-Hi. This is a simple clipboard history picker for Wayland that uses the `kitty`
-terminal. Here's how it works:
+Hi. This is a clipboard history picker for Wayland.
 
-- In the background, `cliphist` records what you copy.
-- The interface uses `fzf` to present the clipboard history with a preview pane.
-- When you select an entry, the program runs `wl-copy` to put it back on the
-  clipboard.
-
-Let's say you copy a command from a terminal, then an image, then a URL. The
-clipboard now holds only the URL, but the picker remembers everything you
-copied, so you can bring each one back, or look at the image through the
-preview pane before choosing it.
-
-I use this in [my setup](https://github.com/athaurian/dotfiles).
-
-## Terms
-
-These terms come up throughout this page:
-
-| Term         | Meaning                                                                                                                   |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------- |
-| History      | The clipboard entries `cliphist` has stored. Copying something new adds an entry and leaves the older ones in place.      |
-| Entry        | One item in the history, identified by a numeric id.                                                                      |
-| Backend      | The program that supplies the history and copies entries back. `cliphist` is the Wayland implementation and the only one. |
-| Preview pane | The right-hand half of the picker that shows the highlighted entry.                                                       |
-
-Below, "history" means clipboard history, and "picker" means this program.
+The picker is built around `cliphist`, `fzf`, and the `kitty` terminal. It supports previewing text, binary payloads, and inline images (via `kitten icat`). Selected entries may either be copied back to the system's clipboard or deleted in place.
 
 ## Requirements
 
-- Python 3.11 or newer.
-- A Wayland session with `WAYLAND_DISPLAY` set. There's no X11 backend.
-- `cliphist` for the history, `wl-clipboard` (`wl-copy`) for copying back, and
-  `fzf` for the interface.
-- ImageMagick (`magick`) to recognize images, and `kitten` from kitty to draw
-  them.
-- `kitty` to open the picker window when it starts without a terminal.
-- `notify-send` for error and empty-history messages. Notifications are
-  skipped silently when it's missing.
+- A Wayland session (`WAYLAND_DISPLAY` set) with `wl-copy` and an active `cliphist` watcher (for example, `wl-paste --watch cliphist store`)
+- `kitty` (with `kitten`), `fzf`, and ImageMagick (`magick`, used to query image dimensions and convert formats for preview)
+- `notify-send` (optional, for desktop error notifications when launched without a terminal)
+- Python `3.11+`
 
-## Install
+## Installation
 
-Install the package to get a `clipboard` command on `PATH`:
+Install the `clipboard` command with `uv`:
 
-```sh
+```bash
 uv tool install git+https://github.com/athaurian/clipboard-picker
 ```
 
-Or keep `bin/` and `src/` together and run the checkout directly:
+Or run directly from a checkout via `./bin/clipboard` (for example, by symlinking `./bin/clipboard` to `~/.local/bin/clipboard`).
 
-```sh
-git clone https://github.com/athaurian/clipboard-picker
-cd clipboard-picker
-./bin/clipboard
+## Usage and Sway integration
+
+```bash
+clipboard
 ```
 
-To call a checkout by name without installing, symlink `bin/clipboard` into
-`~/.local/bin`:
+When you run `clipboard` from an interactive terminal, `fzf` opens directly in that terminal. When triggered from a window-manager keybinding (where stdout/stdin are not attached to a TTY), `clipboard` automatically relaunches itself inside a dedicated `kitty` window with `--title clipboard_term` so you can bind it directly in Sway:
 
-```sh
-ln -s "$PWD/bin/clipboard" ~/.local/bin/clipboard
+```ini
+for_window [app_id="kitty" title="^clipboard_term$"] floating enable, resize set 900 600, move position center
+bindsym $mod+Ctrl+v exec clipboard
 ```
 
-## Usage
+### Keys inside the picker
 
-Start the picker from a terminal:
+| Key                 | Action                                                            |
+| :------------------ | :---------------------------------------------------------------- |
+| `Enter`             | Copy the highlighted entry to the Wayland clipboard and exit      |
+| `Delete` / `Ctrl-D` | Delete the highlighted entry from `cliphist` and refresh the list |
+| `Esc` / `Ctrl-C`    | Exit without modifying the current clipboard                      |
 
-```sh
-./bin/clipboard
-```
+## Preview behavior
 
-| Key                              | Action                               |
-| -------------------------------- | ------------------------------------ |
-| Type                             | Filter entries by their summary      |
-| `Up`, `Down`, `Ctrl-p`, `Ctrl-n` | Move the highlight                   |
-| `Enter`                          | Copy the highlighted entry and close |
-| `Esc`, `Ctrl-c`                  | Close without copying                |
+- **Images**: Rendered inline with `kitten icat` when running inside `kitty`, or summarized by format and pixel dimensions via `magick` in other terminals.
+- **Text and UTF-16 fallbacks**: Decodes UTF-8 first, then inspects byte patterns to decode UTF-16LE/BE payloads even when the source application omitted a Byte Order Mark (BOM).
+- **Binary data**: Summarizes payload size instead of dumping raw control bytes to the terminal.
 
-If the selected entry has been removed from the history since the list was
-drawn, the picker says so in a notification and leaves the clipboard alone.
+## Options and environment
 
-When run normally, the picker exits 0 after copying, canceling, or reporting
-an empty history, and 1 when a dependency is missing or the backend fails.
+| Flag / Variable                   | Default            | Description                                                                 |
+| :-------------------------------- | :----------------- | :-------------------------------------------------------------------------- |
+| `--backend` / `CLIPBOARD_BACKEND` | `cliphist`         | Clipboard history backend to query                                          |
+| `--db-path PATH`                  | `cliphist` default | Path to a custom `cliphist` database file                                   |
+| `PICKER_NO_RELAUNCH=1`            | Unset              | Do not spawn a new `kitty` window when invoked without a TTY (fail instead) |
 
-### Preview fallbacks
+### Exit codes
 
-| Content                      | Shown as                   |
-| ---------------------------- | -------------------------- |
-| Text (UTF-8)                 | The full text              |
-| Text (UTF-16 without a BOM)  | The decoded text           |
-| Image                        | The image, inline          |
-| Image that can't be rendered | `[image: N bytes]`         |
-| Anything else                | `[N bytes of binary data]` |
-
-Browsers sometimes put copied content on the clipboard as UTF-16 without a
-byte-order mark, so the preview decodes that rather than showing a binary blob.
-
-### Options
-
-| Option           | Effect                                                                                       |
-| ---------------- | -------------------------------------------------------------------------------------------- |
-| `--backend NAME` | Use a specific backend. `cliphist` is the only one.                                          |
-| `--db-path PATH` | Use a specific `cliphist` database instead of `cliphist`'s default.                          |
-| `--preview ID`   | Print the preview for an entry and exit. `fzf` calls this, so it isn't normally run by hand. |
-
-### Environment
-
-| Variable             | Effect                                                                                                                                     |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `PICKER_NO_RELAUNCH` | Any non-empty value stops the relaunch into kitty when stdout isn't a terminal.                                                            |
-| `CLIPBOARD_BACKEND`  | Backend to use when `--backend` isn't given.                                                                                               |
-| `WAYLAND_DISPLAY`    | Session detection. When set, the `cliphist` backend is selected. When unset, the picker reports that the session has no supported backend. |
-
-`--backend` wins over `CLIPBOARD_BACKEND`, which wins over detection.
-
-## Running from a binding
-
-`fzf` needs a terminal. Started from a window manager binding, the picker's
-stdout isn't a terminal, so it re-executes itself inside a floating `kitty`
-window titled `clipboard_term`. The title lets the compositor float and mark
-the window. On Sway, add these lines to the config:
-
-```conf
-for_window [app_id="kitty" title="clipboard_term"] floating enable, resize set width 75 ppt height 70 ppt, move position center
-bindsym $mod+Ctrl+v exec ~/.local/bin/clipboard
-```
-
-If kitty isn't installed, the picker sends a notification instead of opening
-a window.
+- `0`: Entry copied, or user cancelled cleanly in `fzf`
+- `1`: Runtime or backend error (missing binary, unreadable database, or absent `WAYLAND_DISPLAY`)
+- `2`: Invalid CLI arguments
 
 ## Development
 
-The `Makefile` provides these targets:
-
-| Target        | Action                                                                                    |
-| ------------- | ----------------------------------------------------------------------------------------- |
-| `make check`  | Runs the linter, formatter check, type check, and unit tests. Stops at the first problem. |
-| `make lint`   | Runs the linter, formatter check, and type check without modifying files.                 |
-| `make format` | Applies ruff fixes and formatting.                                                        |
-| `make test`   | Runs the unit tests.                                                                      |
-
-The targets use `uv` to pull pinned versions of `ruff` and `mypy` on demand, so
-you don't need a project virtual environment.
-
-To run the unit tests without `make`:
-
-```sh
-PYTHONPATH=src:. python3 -m unittest discover -s tests -t .
+```bash
+make test
+make lint
+make format
 ```
 
 ## License
 
-Released under the MIT license. See [LICENSE](LICENSE) for the full text.
+MIT
